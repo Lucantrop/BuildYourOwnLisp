@@ -983,7 +983,13 @@ int main(int argc, char* argv[]) {
 
     lenv* e = lenv_new();
     lenv_add_builtins(e);
-        
+
+    lval* args = lval_add(lval_sexpr(), lval_str("prelude.lssp"));
+    lval* x = builtin_load(e, args);
+    if (x->type == LVAL_ERR) { lval_println(x); }
+    lval_del(x);
+
+
     if (argc == 1) {
         /* Print version and exit information */
         puts("Lissp Version 0.0.0.1.0");

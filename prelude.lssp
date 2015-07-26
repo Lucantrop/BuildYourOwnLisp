@@ -1,0 +1,145 @@
+; Atoms
+(def {nil} {})
+(def {true} 1)
+(def {false} 0)
+
+; Function definitions
+(def {fun} (\ {f b} {
+  def (head f) (\ (tail f) b)
+}))
+
+; Unpack list for function
+(fun {unpack f l}{
+  eval (join (list f) l)
+})
+
+; Pack list for function
+(fun {pack f & xs} {f xs})
+
+; Curried and uncurried calling
+(def {curry} unpack)
+(def {uncurry} pack)
+
+; Perform several things in sequence
+(fun {do & l} {
+  if (== l nil)
+    {nil}
+    {tail l}
+})
+
+; Open new scope
+(fun {let b}{
+  ((\ {_} b) ())
+})
+
+;; Logical functions
+
+; Simple logical operators
+(fun {not x}   {- 1 x})
+(fun {or x y}  {+ x y})
+(fun {and x y} {* x y})
+
+; Conditional functions
+(fun {select & cs} {
+  if (== cs nil)
+    {error "No selection found"}
+    {if (fst (fst cs)) {snd (fst cs)} {unpack select (tail cs)}}
+})
+
+; Default case
+(def {otherwise} true)
+
+(fun {case x & cs} {
+  if (== cs nil)
+    {error "No case found"}
+    {if (== x (fst (fst cs))) {snd (fst cs)} {
+      unpack case (join (list x) (tail cs))}}
+})
+
+; Misc functions
+(fun {flip f a b} {f b a})
+(fun {ghost & xs} {eval xs})
+(fun {comp f g x} {f (g x)})
+
+;; List functions
+
+; First, second or third item in list
+(fun {fst l} { eval (head l) })
+(fun {snd l} { eval (head (tail l)) })
+(fun {trd l} { eval (head (tail (tail l))) })
+
+; List length
+(fun {len l} {
+  if (== l nil)
+    {0}
+    {+ 1 (len (tail l))}
+})
+
+; N-th item in list
+(fun {nth n l} {
+  if (== n 0)
+    {fst l}
+    {nth (- n 1) (tail l)}
+})
+
+; Last item in list
+(fun {last l} {nth (- (len l) 1) l})
+
+; Take N items
+(fun {take n l} {
+  if (== n 0)
+    {nil}
+    {join (head l) (take (- n 1) (tail l))}
+})
+
+; Drop N items
+(fun {drop n l} {
+  if (== n 0)
+    {l}
+    {drop (- n 1) (tail l)}
+})
+
+; Split list at N
+(fun {split n l} {list (take n l) (drop n l)})
+
+; Element of list
+(fun {elem x l} {
+  if (== l nil)
+    {false}
+    {if (== x (fst l)) {true} {elem x (tail l)}}
+})
+
+; Apply function to list
+(fun {map f l} {
+  if (== l nil)
+    {nil}
+    {join (list (f (fst l))) (map f (tail l))}
+})
+
+; Apply filter to list
+(fun {filter f l} {
+  if (== l nil)
+    {nil}
+    {join (if (f (fst l)) {head l} {nil}) (filter f (tail l))}
+})
+
+; Fold left
+(fun {foldl f z l} {
+  if (== l nil)
+    {z}
+    {foldl f (f z (fst l)) (tail l)}
+})
+
+; Sum and product of list
+(fun {sum l} {foldl + 0 l})
+(fun {product l} {foldl * 1 l})
+
+;; Mathematical functions
+
+; Fibonacci
+(fun {fib n} {
+  select
+    { (== n 0) {0} }
+    { (== n 1) {1} }
+    { otherwise {+ (fib (- n 1)) (fib (- n 2))} }
+})
